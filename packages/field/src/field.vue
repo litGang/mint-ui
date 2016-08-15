@@ -8,19 +8,25 @@
         'is-textarea': type === 'textarea'
       }]">
       <textarea
+        v-el:textarea
         class="mint-field-core"
         :placeholder="placeholder"
         v-if="type === 'textarea'"
         :rows="rows"
+        :disabled="disabled"
+        :readonly="readonly"
         v-model="value">
       </textarea>
       <input
+        v-el:input
         class="mint-field-core"
         :placeholder="placeholder"
         :number="type === 'number'"
         v-else
         :type="type"
         @focus="active = true"
+        :disabled="disabled"
+        :readonly="readonly"
         v-model="value">
       <div
         @click="value = ''"
@@ -39,6 +45,7 @@
 <script>
 import XCell from 'packages/cell/index.js';
 import Clickoutside from 'vue-clickoutside';
+
 if (process.env.IMPORTCSS) {
   require('packages/cell/style.css');
   require('packages/font/style.css');
@@ -53,6 +60,8 @@ if (process.env.IMPORTCSS) {
  * @param {string} [label] - 标签
  * @param {string} [rows] - textarea 的 rows
  * @param {string} [placeholder] - placeholder
+ * @param {string} [disabled] - disabled
+ * @param {string} [readonly] - readonly
  * @param {string} [state] - 表单校验状态样式，接受 error, warning, success
  *
  * @example
@@ -82,15 +91,33 @@ export default {
     rows: String,
     label: String,
     placeholder: String,
+    readonly: Boolean,
+    disabled: Boolean,
     state: {
       type: String,
       default: 'default'
     },
-    value: ''
+    value: {},
+    attr: Object
   },
 
   components: {
     XCell
+  },
+
+  watch: {
+    attr: {
+      immediate: true,
+      handler(attrs) {
+        this.$nextTick(() => {
+          const target = [this.$els.input, this.$els.textarea];
+          target.forEach(el => {
+            if (!el || !attrs) return;
+            Object.keys(attrs).map(name => el.setAttribute(name, attrs[name]));
+          });
+        });
+      }
+    }
   }
 };
 </script>
